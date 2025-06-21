@@ -1,0 +1,15 @@
+[package]
+name = "cc-hook"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+dirs = "5"
+nix = { version = "0.29", features = ["signal", "process", "term", "fs"] }
+regex = "1"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["full"] }
+toml = "0.8"
+vt100 = "0.15"
+vte = "0.13"
