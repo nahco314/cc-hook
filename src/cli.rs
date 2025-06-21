@@ -6,10 +6,10 @@ use std::path::PathBuf;
 pub struct Cli {
     #[command(subcommand)]
     pub command: Option<Commands>,
-    
+
     #[arg(short = 'c', long, value_name = "FILE")]
     pub config: Option<PathBuf>,
-    
+
     #[arg(trailing_var_arg = true)]
     pub args: Vec<String>,
 }
@@ -17,7 +17,7 @@ pub struct Cli {
 #[derive(Subcommand)]
 pub enum Commands {
     ConfigPath,
-    
+
     Run {
         #[arg(trailing_var_arg = true)]
         args: Vec<String>,
@@ -27,7 +27,7 @@ pub enum Commands {
 impl Cli {
     pub fn parse_args() -> (Option<PathBuf>, Vec<String>) {
         let cli = Cli::parse();
-        
+
         match cli.command {
             Some(Commands::ConfigPath) => {
                 println!("{}", crate::config::default_config_path().display());

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Config {
@@ -26,21 +26,21 @@ pub fn default_config_path() -> PathBuf {
 
 pub fn load_config(path: Option<PathBuf>) -> Result<Config, Box<dyn std::error::Error>> {
     let config_path = path.unwrap_or_else(default_config_path);
-    
+
     if !config_path.exists() {
         return Ok(Config { hooks: vec![] });
     }
-    
+
     let content = fs::read_to_string(&config_path)?;
     let config: Config = toml::from_str(&content)?;
-    
+
     Ok(config)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_parse_config() {
         let toml_str = r#"
@@ -54,7 +54,7 @@ mod tests {
             regex = "^●.*"
             command = "notify-send '[cc-wrap] Task finished'"
         "#;
-        
+
         let config: Config = toml::from_str(toml_str).unwrap();
         assert_eq!(config.hooks.len(), 2);
         assert_eq!(config.hooks[0].name, "permission_prompt");
