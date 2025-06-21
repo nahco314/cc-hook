@@ -1,6 +1,5 @@
 use crate::config::Hook;
 use regex::Regex;
-use std::collections::HashMap;
 use std::process::Command;
 use std::time::{Duration, Instant};
 use tokio::task;
@@ -15,7 +14,6 @@ pub struct CompiledHook {
 
 pub struct HookEngine {
     hooks: Vec<CompiledHook>,
-    previous_matches: HashMap<String, bool>,
 }
 
 impl HookEngine {
@@ -35,24 +33,22 @@ impl HookEngine {
         
         Ok(Self {
             hooks: compiled_hooks,
-            previous_matches: HashMap::new(),
         })
     }
     
-    pub fn evaluate(&mut self, _previous: &str, current: &str) -> Vec<String> {
+    pub fn evaluate(&mut self, previous: &str, current: &str) -> Vec<String> {
         let mut triggered = Vec::new();
         
         for hook in &mut self.hooks {
-            let prev_match = self.previous_matches.get(&hook.name).copied().unwrap_or(false);
+            let prev_match = hook.regex.is_match(previous);
             let curr_match = hook.regex.is_match(current);
             
-            self.previous_matches.insert(hook.name.clone(), curr_match);
-            
+            // Only trigger if pattern appears in current but not in previous
             if curr_match && !prev_match {
                 if let Some(cooldown) = hook.cooldown {
                     if let Some(last_fired) = hook.last_fired {
                         if Instant::now().duration_since(last_fired) < cooldown {
-                            eprintln!("[cc-hook] Skipping hook '{}' due to cooldown", hook.name);
+                            // Silently skip due to cooldown
                             continue;
                         }
                     }
@@ -60,7 +56,6 @@ impl HookEngine {
                 
                 hook.last_fired = Some(Instant::now());
                 triggered.push(hook.command.clone());
-                eprintln!("[cc-hook] Triggered hook: {}", hook.name);
             }
         }
         
@@ -76,17 +71,11 @@ impl HookEngine {
                     .spawn()
                 {
                     Ok(mut child) => {
-                        match child.wait() {
-                            Ok(status) => {
-                                eprintln!("[cc-hook] Command '{}' exited with: {}", command, status);
-                            }
-                            Err(e) => {
-                                eprintln!("[cc-hook] Failed to wait for command '{}': {}", command, e);
-                            }
-                        }
+                        // Silently wait for completion
+                        let _ = child.wait();
                     }
-                    Err(e) => {
-                        eprintln!("[cc-hook] Failed to execute command '{}': {}", command, e);
+                    Err(_) => {
+                        // Silently ignore execution errors
                     }
                 }
             });

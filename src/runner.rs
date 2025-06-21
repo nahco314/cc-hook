@@ -155,14 +155,6 @@ pub async fn run_with_hooks(
                     
                     screen.process(&data);
                     frame_detector.on_data(&data);
-                    
-                    // Also check for frame on newline
-                    if data.contains(&b'\n') || frame_detector.should_capture_frame() {
-                        let (prev, curr) = screen.take_snapshot();
-                        let commands = hook_engine.evaluate(&prev, &curr);
-                        HookEngine::execute_commands(commands);
-                        frame_detector.reset();
-                    }
                 }
                 _ = sigwinch.recv() => {
                     let stdin = std::io::stdin();
@@ -171,7 +163,16 @@ pub async fn run_with_hooks(
                         termios::tcsetattr(master_borrowed, SetArg::TCSANOW, &size)?;
                     }
                 }
-                _ = sleep(std::time::Duration::from_millis(100)) => {
+                _ = sleep(std::time::Duration::from_millis(10)) => {
+                    // Check for frame boundary
+                    if frame_detector.should_capture_frame() {
+                        let (prev, curr) = screen.take_snapshot();
+                        let commands = hook_engine.evaluate(&prev, &curr);
+                        HookEngine::execute_commands(commands);
+                        frame_detector.reset();
+                    }
+                    
+                    // Check if child process has exited
                     match waitpid(child_pid, Some(nix::sys::wait::WaitPidFlag::WNOHANG))? {
                         WaitStatus::Exited(_, code) => return Ok(code),
                         WaitStatus::Signaled(_, sig, _) => return Ok(128 + sig as i32),
