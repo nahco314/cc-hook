@@ -1,5 +1,5 @@
 use crate::config::Hook;
-use regex::Regex;
+use regex::{Regex, RegexBuilder};
 use std::process::Command;
 use std::time::{Duration, Instant};
 use tokio::task;
@@ -21,7 +21,10 @@ impl HookEngine {
         let mut compiled_hooks = Vec::new();
 
         for hook in hooks {
-            let regex = Regex::new(&hook.regex)?;
+            // Build regex with multi-line mode enabled so ^ and $ match line boundaries
+            let regex = RegexBuilder::new(&hook.regex)
+                .multi_line(true)
+                .build()?;
             compiled_hooks.push(CompiledHook {
                 name: hook.name,
                 regex,
