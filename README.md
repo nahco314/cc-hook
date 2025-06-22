@@ -1,57 +1,84 @@
 # cc-hook
 
-A terminal wrapper that monitors output and triggers commands based on regex patterns.
+A lightweight wrapper specifically for claude code to trigger notifications or custom commands when tasks complete or permissions are requested.
+
+## What is cc-hook?
+
+`cc-hook` wraps around `claude` executions and monitors its output. It automatically triggers commands or notifications based on regex patterns you define. Perfect for staying informed without constantly watching the terminal!
+
+## Installation
+
+Just run:
+
+```bash
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/nahco314/cc-hook/releases/latest/download/cc-hook-installer.sh | sh
+```
 
 ## Usage
 
+Run your usual `claude` command with `cc-hook`:
+
 ```bash
-# Show config file path
-cc-hook config-path
-
-# Run a command with default config
-cc-hook run <command> [args...]
-
-# Run with custom config
-cc-hook -c <config.toml> <command> [args...]
-
-# Implicit run (shorthand)
-cc-hook <command> [args...]
+cc-hook claude --model opus
 ```
 
 ## Configuration
 
-Default config location: `~/.config/cc-hook/config.toml`
+You can check your default configuration path with:
 
-Example config:
+```bash
+cc-hook config-path
+```
+
+Then you can edit it and configure cc-hook.
+
+---
+
+By default, the configuration is empty, so you'll need to define your own hooks to trigger notifications or commands.
+
+Here’s a quick example to get started:
+
 ```toml
 [[hooks]]
 name = "permission_prompt"
 regex = "Do you want to proceed\\?"
-command = "notify-send '[cc-hook] Permission required'"
+command = "notify-send '[cc-hook] Claude Code requires your permission!'"
 
 [[hooks]]
-name = "task_finished"
+name = "task_completed"
 regex = "^●.*"
-command = "notify-send '[cc-hook] Task completed'"
+command = "notify-send '[cc-hook] Claude Code is saying something.'"
 ```
 
-## Build
+Customize your regex patterns and commands as needed.
+
+## Commands
+
+* Show the config file path:
 
 ```bash
-cargo build --release
+cc-hook config-path
 ```
 
-## Example
+* Use a custom config file:
 
 ```bash
-# Create a test config
-cat > test-config.toml << 'EOF'
-[[hooks]]
-name = "hello_detection"
-regex = "Hello"
-command = "echo 'Detected Hello!'"
-EOF
-
-# Run with the test config
-./target/release/cc-hook -c test-config.toml echo "Hello World"
+cc-hook -c custom-config.toml claude --model opus
 ```
+
+## Why use cc-hook?
+
+* Never miss important prompts from `claude code`.
+* Get notified instantly when tasks finish.
+* Lightweight, customizable, and straightforward.
+
+## Contributing
+
+Contributions, issues, and feature requests are all welcome!
+
+In fact, this tool is 100% made by claude code.
+So the code style and comments may be a little strange. So even small refactorings and comment fixes are welcome :)
+
+## License
+
+MIT
