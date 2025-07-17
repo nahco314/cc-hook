@@ -1,3 +1,9 @@
+# Update
+
+Claude Code's official hooks function has released.
+
+So cc-hook is no longer needed; use official hooks!
+
 # cc-hook
 
 A lightweight wrapper specifically for claude code to trigger notifications or custom commands when tasks complete or permissions are requested.
